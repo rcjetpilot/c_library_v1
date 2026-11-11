@@ -1,14 +1,16 @@
 #pragma once
 // MESSAGE MISSION_ACK PACKING
 
+#include <stdint.h>
+
 #define MAVLINK_MSG_ID_MISSION_ACK 47
 
-MAVPACKED(
+
 typedef struct __mavlink_mission_ack_t {
- uint8_t target_system; /*< System ID*/
- uint8_t target_component; /*< Component ID*/
- uint8_t type; /*< See MAV_MISSION_RESULT enum*/
-}) mavlink_mission_ack_t;
+ uint8_t target_system; /*<  System ID*/
+ uint8_t target_component; /*<  Component ID*/
+ uint8_t type; /*<  Mission result.*/
+} mavlink_mission_ack_t;
 
 #define MAVLINK_MSG_ID_MISSION_ACK_LEN 3
 #define MAVLINK_MSG_ID_MISSION_ACK_MIN_LEN 3
@@ -47,9 +49,9 @@ typedef struct __mavlink_mission_ack_t {
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param target_system System ID
- * @param target_component Component ID
- * @param type See MAV_MISSION_RESULT enum
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param type  Mission result.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_mission_ack_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
@@ -76,14 +78,53 @@ static inline uint16_t mavlink_msg_mission_ack_pack(uint8_t system_id, uint8_t c
 }
 
 /**
+ * @brief Pack a mission_ack message
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param status MAVLink status structure
+ * @param msg The MAVLink message to compress the data into
+ *
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param type  Mission result.
+ * @return length of the message in bytes (excluding serial stream start sign)
+ */
+static inline uint16_t mavlink_msg_mission_ack_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
+                               uint8_t target_system, uint8_t target_component, uint8_t type)
+{
+#if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
+    char buf[MAVLINK_MSG_ID_MISSION_ACK_LEN];
+    _mav_put_uint8_t(buf, 0, target_system);
+    _mav_put_uint8_t(buf, 1, target_component);
+    _mav_put_uint8_t(buf, 2, type);
+
+        memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_MISSION_ACK_LEN);
+#else
+    mavlink_mission_ack_t packet;
+    packet.target_system = target_system;
+    packet.target_component = target_component;
+    packet.type = type;
+
+        memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_MISSION_ACK_LEN);
+#endif
+
+    msg->msgid = MAVLINK_MSG_ID_MISSION_ACK;
+#if MAVLINK_CRC_EXTRA
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_MISSION_ACK_MIN_LEN, MAVLINK_MSG_ID_MISSION_ACK_LEN, MAVLINK_MSG_ID_MISSION_ACK_CRC);
+#else
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_MISSION_ACK_MIN_LEN, MAVLINK_MSG_ID_MISSION_ACK_LEN, 0);
+#endif
+}
+
+/**
  * @brief Pack a mission_ack message on a channel
  * @param system_id ID of this system
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param target_system System ID
- * @param target_component Component ID
- * @param type See MAV_MISSION_RESULT enum
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param type  Mission result.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_mission_ack_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
@@ -138,12 +179,26 @@ static inline uint16_t mavlink_msg_mission_ack_encode_chan(uint8_t system_id, ui
 }
 
 /**
+ * @brief Encode a mission_ack struct with provided status structure
+ *
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param status MAVLink status structure
+ * @param msg The MAVLink message to compress the data into
+ * @param mission_ack C-struct to read the message contents from
+ */
+static inline uint16_t mavlink_msg_mission_ack_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_mission_ack_t* mission_ack)
+{
+    return mavlink_msg_mission_ack_pack_status(system_id, component_id, _status, msg,  mission_ack->target_system, mission_ack->target_component, mission_ack->type);
+}
+
+/**
  * @brief Send a mission_ack message
  * @param chan MAVLink channel to send the message
  *
- * @param target_system System ID
- * @param target_component Component ID
- * @param type See MAV_MISSION_RESULT enum
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param type  Mission result.
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
@@ -182,7 +237,7 @@ static inline void mavlink_msg_mission_ack_send_struct(mavlink_channel_t chan, c
 
 #if MAVLINK_MSG_ID_MISSION_ACK_LEN <= MAVLINK_MAX_PAYLOAD_LEN
 /*
-  This varient of _send() can be used to save stack space by re-using
+  This variant of _send() can be used to save stack space by reusing
   memory from the receive buffer.  The caller provides a
   mavlink_message_t which is the size of a full mavlink message. This
   is usually the receive buffer for the channel, and allows a reply to an
@@ -214,19 +269,9 @@ static inline void mavlink_msg_mission_ack_send_buf(mavlink_message_t *msgbuf, m
 
 
 /**
- * @brief Get field target_system from mission_ack message
- *
- * @return System ID
- */
-static inline uint8_t mavlink_msg_mission_ack_get_target_system(const mavlink_message_t* msg)
-{
-    return _MAV_RETURN_uint8_t(msg,  0);
-}
-
-/**
  * @brief Get field target_component from mission_ack message
  *
- * @return Component ID
+ * @return  Component ID
  */
 static inline uint8_t mavlink_msg_mission_ack_get_target_component(const mavlink_message_t* msg)
 {
@@ -236,7 +281,7 @@ static inline uint8_t mavlink_msg_mission_ack_get_target_component(const mavlink
 /**
  * @brief Get field type from mission_ack message
  *
- * @return See MAV_MISSION_RESULT enum
+ * @return  Mission result.
  */
 static inline uint8_t mavlink_msg_mission_ack_get_type(const mavlink_message_t* msg)
 {
@@ -252,12 +297,13 @@ static inline uint8_t mavlink_msg_mission_ack_get_type(const mavlink_message_t* 
 static inline void mavlink_msg_mission_ack_decode(const mavlink_message_t* msg, mavlink_mission_ack_t* mission_ack)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
-    mission_ack->target_system = mavlink_msg_mission_ack_get_target_system(msg);
+    mission_ack->target_system = _MAV_RETURN_uint8_t(msg, 0);
     mission_ack->target_component = mavlink_msg_mission_ack_get_target_component(msg);
     mission_ack->type = mavlink_msg_mission_ack_get_type(msg);
+
 #else
-        uint8_t len = msg->len < MAVLINK_MSG_ID_MISSION_ACK_LEN? msg->len : MAVLINK_MSG_ID_MISSION_ACK_LEN;
-        memset(mission_ack, 0, MAVLINK_MSG_ID_MISSION_ACK_LEN);
+    uint8_t len = msg->len < MAVLINK_MSG_ID_MISSION_ACK_LEN ? msg->len : MAVLINK_MSG_ID_MISSION_ACK_LEN;
+    memset(mission_ack, 0, MAVLINK_MSG_ID_MISSION_ACK_LEN);
     memcpy(mission_ack, _MAV_PAYLOAD(msg), len);
 #endif
 }

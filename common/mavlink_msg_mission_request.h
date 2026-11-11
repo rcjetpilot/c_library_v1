@@ -1,14 +1,16 @@
 #pragma once
 // MESSAGE MISSION_REQUEST PACKING
 
+#include <stdint.h>
+
 #define MAVLINK_MSG_ID_MISSION_REQUEST 40
 
-MAVPACKED(
+
 typedef struct __mavlink_mission_request_t {
- uint16_t seq; /*< Sequence*/
- uint8_t target_system; /*< System ID*/
- uint8_t target_component; /*< Component ID*/
-}) mavlink_mission_request_t;
+ uint16_t seq; /*<  Sequence*/
+ uint8_t target_system; /*<  System ID*/
+ uint8_t target_component; /*<  Component ID*/
+} mavlink_mission_request_t;
 
 #define MAVLINK_MSG_ID_MISSION_REQUEST_LEN 4
 #define MAVLINK_MSG_ID_MISSION_REQUEST_MIN_LEN 4
@@ -25,18 +27,18 @@ typedef struct __mavlink_mission_request_t {
     40, \
     "MISSION_REQUEST", \
     3, \
-    {  { "seq", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_mission_request_t, seq) }, \
-         { "target_system", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(mavlink_mission_request_t, target_system) }, \
+    {  { "target_system", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(mavlink_mission_request_t, target_system) }, \
          { "target_component", NULL, MAVLINK_TYPE_UINT8_T, 0, 3, offsetof(mavlink_mission_request_t, target_component) }, \
+         { "seq", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_mission_request_t, seq) }, \
          } \
 }
 #else
 #define MAVLINK_MESSAGE_INFO_MISSION_REQUEST { \
     "MISSION_REQUEST", \
     3, \
-    {  { "seq", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_mission_request_t, seq) }, \
-         { "target_system", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(mavlink_mission_request_t, target_system) }, \
+    {  { "target_system", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(mavlink_mission_request_t, target_system) }, \
          { "target_component", NULL, MAVLINK_TYPE_UINT8_T, 0, 3, offsetof(mavlink_mission_request_t, target_component) }, \
+         { "seq", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_mission_request_t, seq) }, \
          } \
 }
 #endif
@@ -47,9 +49,9 @@ typedef struct __mavlink_mission_request_t {
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param target_system System ID
- * @param target_component Component ID
- * @param seq Sequence
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param seq  Sequence
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_mission_request_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
@@ -76,14 +78,53 @@ static inline uint16_t mavlink_msg_mission_request_pack(uint8_t system_id, uint8
 }
 
 /**
+ * @brief Pack a mission_request message
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param status MAVLink status structure
+ * @param msg The MAVLink message to compress the data into
+ *
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param seq  Sequence
+ * @return length of the message in bytes (excluding serial stream start sign)
+ */
+static inline uint16_t mavlink_msg_mission_request_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
+                               uint8_t target_system, uint8_t target_component, uint16_t seq)
+{
+#if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
+    char buf[MAVLINK_MSG_ID_MISSION_REQUEST_LEN];
+    _mav_put_uint16_t(buf, 0, seq);
+    _mav_put_uint8_t(buf, 2, target_system);
+    _mav_put_uint8_t(buf, 3, target_component);
+
+        memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_MISSION_REQUEST_LEN);
+#else
+    mavlink_mission_request_t packet;
+    packet.seq = seq;
+    packet.target_system = target_system;
+    packet.target_component = target_component;
+
+        memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_MISSION_REQUEST_LEN);
+#endif
+
+    msg->msgid = MAVLINK_MSG_ID_MISSION_REQUEST;
+#if MAVLINK_CRC_EXTRA
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_MISSION_REQUEST_MIN_LEN, MAVLINK_MSG_ID_MISSION_REQUEST_LEN, MAVLINK_MSG_ID_MISSION_REQUEST_CRC);
+#else
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_MISSION_REQUEST_MIN_LEN, MAVLINK_MSG_ID_MISSION_REQUEST_LEN, 0);
+#endif
+}
+
+/**
  * @brief Pack a mission_request message on a channel
  * @param system_id ID of this system
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param target_system System ID
- * @param target_component Component ID
- * @param seq Sequence
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param seq  Sequence
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_mission_request_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
@@ -138,12 +179,26 @@ static inline uint16_t mavlink_msg_mission_request_encode_chan(uint8_t system_id
 }
 
 /**
+ * @brief Encode a mission_request struct with provided status structure
+ *
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param status MAVLink status structure
+ * @param msg The MAVLink message to compress the data into
+ * @param mission_request C-struct to read the message contents from
+ */
+static inline uint16_t mavlink_msg_mission_request_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_mission_request_t* mission_request)
+{
+    return mavlink_msg_mission_request_pack_status(system_id, component_id, _status, msg,  mission_request->target_system, mission_request->target_component, mission_request->seq);
+}
+
+/**
  * @brief Send a mission_request message
  * @param chan MAVLink channel to send the message
  *
- * @param target_system System ID
- * @param target_component Component ID
- * @param seq Sequence
+ * @param target_system  System ID
+ * @param target_component  Component ID
+ * @param seq  Sequence
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
@@ -182,7 +237,7 @@ static inline void mavlink_msg_mission_request_send_struct(mavlink_channel_t cha
 
 #if MAVLINK_MSG_ID_MISSION_REQUEST_LEN <= MAVLINK_MAX_PAYLOAD_LEN
 /*
-  This varient of _send() can be used to save stack space by re-using
+  This variant of _send() can be used to save stack space by reusing
   memory from the receive buffer.  The caller provides a
   mavlink_message_t which is the size of a full mavlink message. This
   is usually the receive buffer for the channel, and allows a reply to an
@@ -214,19 +269,9 @@ static inline void mavlink_msg_mission_request_send_buf(mavlink_message_t *msgbu
 
 
 /**
- * @brief Get field target_system from mission_request message
- *
- * @return System ID
- */
-static inline uint8_t mavlink_msg_mission_request_get_target_system(const mavlink_message_t* msg)
-{
-    return _MAV_RETURN_uint8_t(msg,  2);
-}
-
-/**
  * @brief Get field target_component from mission_request message
  *
- * @return Component ID
+ * @return  Component ID
  */
 static inline uint8_t mavlink_msg_mission_request_get_target_component(const mavlink_message_t* msg)
 {
@@ -236,7 +281,7 @@ static inline uint8_t mavlink_msg_mission_request_get_target_component(const mav
 /**
  * @brief Get field seq from mission_request message
  *
- * @return Sequence
+ * @return  Sequence
  */
 static inline uint16_t mavlink_msg_mission_request_get_seq(const mavlink_message_t* msg)
 {
@@ -253,11 +298,12 @@ static inline void mavlink_msg_mission_request_decode(const mavlink_message_t* m
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     mission_request->seq = mavlink_msg_mission_request_get_seq(msg);
-    mission_request->target_system = mavlink_msg_mission_request_get_target_system(msg);
+    mission_request->target_system = _MAV_RETURN_uint8_t(msg, 2);
     mission_request->target_component = mavlink_msg_mission_request_get_target_component(msg);
+
 #else
-        uint8_t len = msg->len < MAVLINK_MSG_ID_MISSION_REQUEST_LEN? msg->len : MAVLINK_MSG_ID_MISSION_REQUEST_LEN;
-        memset(mission_request, 0, MAVLINK_MSG_ID_MISSION_REQUEST_LEN);
+    uint8_t len = msg->len < MAVLINK_MSG_ID_MISSION_REQUEST_LEN ? msg->len : MAVLINK_MSG_ID_MISSION_REQUEST_LEN;
+    memset(mission_request, 0, MAVLINK_MSG_ID_MISSION_REQUEST_LEN);
     memcpy(mission_request, _MAV_PAYLOAD(msg), len);
 #endif
 }

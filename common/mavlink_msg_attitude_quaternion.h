@@ -1,19 +1,21 @@
 #pragma once
 // MESSAGE ATTITUDE_QUATERNION PACKING
 
+#include <stdint.h>
+
 #define MAVLINK_MSG_ID_ATTITUDE_QUATERNION 31
 
-MAVPACKED(
+
 typedef struct __mavlink_attitude_quaternion_t {
- uint32_t time_boot_ms; /*< Timestamp (milliseconds since system boot)*/
- float q1; /*< Quaternion component 1, w (1 in null-rotation)*/
- float q2; /*< Quaternion component 2, x (0 in null-rotation)*/
- float q3; /*< Quaternion component 3, y (0 in null-rotation)*/
- float q4; /*< Quaternion component 4, z (0 in null-rotation)*/
- float rollspeed; /*< Roll angular speed (rad/s)*/
- float pitchspeed; /*< Pitch angular speed (rad/s)*/
- float yawspeed; /*< Yaw angular speed (rad/s)*/
-}) mavlink_attitude_quaternion_t;
+ uint32_t time_boot_ms; /*< [ms] Timestamp (time since system boot).*/
+ float q1; /*<  Quaternion component 1, w (1 in null-rotation)*/
+ float q2; /*<  Quaternion component 2, x (0 in null-rotation)*/
+ float q3; /*<  Quaternion component 3, y (0 in null-rotation)*/
+ float q4; /*<  Quaternion component 4, z (0 in null-rotation)*/
+ float rollspeed; /*< [rad/s] Roll angular speed*/
+ float pitchspeed; /*< [rad/s] Pitch angular speed*/
+ float yawspeed; /*< [rad/s] Yaw angular speed*/
+} mavlink_attitude_quaternion_t;
 
 #define MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN 32
 #define MAVLINK_MSG_ID_ATTITUDE_QUATERNION_MIN_LEN 32
@@ -62,14 +64,14 @@ typedef struct __mavlink_attitude_quaternion_t {
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param time_boot_ms Timestamp (milliseconds since system boot)
- * @param q1 Quaternion component 1, w (1 in null-rotation)
- * @param q2 Quaternion component 2, x (0 in null-rotation)
- * @param q3 Quaternion component 3, y (0 in null-rotation)
- * @param q4 Quaternion component 4, z (0 in null-rotation)
- * @param rollspeed Roll angular speed (rad/s)
- * @param pitchspeed Pitch angular speed (rad/s)
- * @param yawspeed Yaw angular speed (rad/s)
+ * @param time_boot_ms [ms] Timestamp (time since system boot).
+ * @param q1  Quaternion component 1, w (1 in null-rotation)
+ * @param q2  Quaternion component 2, x (0 in null-rotation)
+ * @param q3  Quaternion component 3, y (0 in null-rotation)
+ * @param q4  Quaternion component 4, z (0 in null-rotation)
+ * @param rollspeed [rad/s] Roll angular speed
+ * @param pitchspeed [rad/s] Pitch angular speed
+ * @param yawspeed [rad/s] Yaw angular speed
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_attitude_quaternion_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
@@ -106,19 +108,73 @@ static inline uint16_t mavlink_msg_attitude_quaternion_pack(uint8_t system_id, u
 }
 
 /**
+ * @brief Pack a attitude_quaternion message
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param status MAVLink status structure
+ * @param msg The MAVLink message to compress the data into
+ *
+ * @param time_boot_ms [ms] Timestamp (time since system boot).
+ * @param q1  Quaternion component 1, w (1 in null-rotation)
+ * @param q2  Quaternion component 2, x (0 in null-rotation)
+ * @param q3  Quaternion component 3, y (0 in null-rotation)
+ * @param q4  Quaternion component 4, z (0 in null-rotation)
+ * @param rollspeed [rad/s] Roll angular speed
+ * @param pitchspeed [rad/s] Pitch angular speed
+ * @param yawspeed [rad/s] Yaw angular speed
+ * @return length of the message in bytes (excluding serial stream start sign)
+ */
+static inline uint16_t mavlink_msg_attitude_quaternion_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
+                               uint32_t time_boot_ms, float q1, float q2, float q3, float q4, float rollspeed, float pitchspeed, float yawspeed)
+{
+#if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
+    char buf[MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN];
+    _mav_put_uint32_t(buf, 0, time_boot_ms);
+    _mav_put_float(buf, 4, q1);
+    _mav_put_float(buf, 8, q2);
+    _mav_put_float(buf, 12, q3);
+    _mav_put_float(buf, 16, q4);
+    _mav_put_float(buf, 20, rollspeed);
+    _mav_put_float(buf, 24, pitchspeed);
+    _mav_put_float(buf, 28, yawspeed);
+
+        memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN);
+#else
+    mavlink_attitude_quaternion_t packet;
+    packet.time_boot_ms = time_boot_ms;
+    packet.q1 = q1;
+    packet.q2 = q2;
+    packet.q3 = q3;
+    packet.q4 = q4;
+    packet.rollspeed = rollspeed;
+    packet.pitchspeed = pitchspeed;
+    packet.yawspeed = yawspeed;
+
+        memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN);
+#endif
+
+    msg->msgid = MAVLINK_MSG_ID_ATTITUDE_QUATERNION;
+#if MAVLINK_CRC_EXTRA
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_MIN_LEN, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_CRC);
+#else
+    return mavlink_finalize_message_buffer(msg, system_id, component_id, _status, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_MIN_LEN, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN, 0);
+#endif
+}
+
+/**
  * @brief Pack a attitude_quaternion message on a channel
  * @param system_id ID of this system
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param time_boot_ms Timestamp (milliseconds since system boot)
- * @param q1 Quaternion component 1, w (1 in null-rotation)
- * @param q2 Quaternion component 2, x (0 in null-rotation)
- * @param q3 Quaternion component 3, y (0 in null-rotation)
- * @param q4 Quaternion component 4, z (0 in null-rotation)
- * @param rollspeed Roll angular speed (rad/s)
- * @param pitchspeed Pitch angular speed (rad/s)
- * @param yawspeed Yaw angular speed (rad/s)
+ * @param time_boot_ms [ms] Timestamp (time since system boot).
+ * @param q1  Quaternion component 1, w (1 in null-rotation)
+ * @param q2  Quaternion component 2, x (0 in null-rotation)
+ * @param q3  Quaternion component 3, y (0 in null-rotation)
+ * @param q4  Quaternion component 4, z (0 in null-rotation)
+ * @param rollspeed [rad/s] Roll angular speed
+ * @param pitchspeed [rad/s] Pitch angular speed
+ * @param yawspeed [rad/s] Yaw angular speed
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_attitude_quaternion_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
@@ -183,17 +239,31 @@ static inline uint16_t mavlink_msg_attitude_quaternion_encode_chan(uint8_t syste
 }
 
 /**
+ * @brief Encode a attitude_quaternion struct with provided status structure
+ *
+ * @param system_id ID of this system
+ * @param component_id ID of this component (e.g. 200 for IMU)
+ * @param status MAVLink status structure
+ * @param msg The MAVLink message to compress the data into
+ * @param attitude_quaternion C-struct to read the message contents from
+ */
+static inline uint16_t mavlink_msg_attitude_quaternion_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_attitude_quaternion_t* attitude_quaternion)
+{
+    return mavlink_msg_attitude_quaternion_pack_status(system_id, component_id, _status, msg,  attitude_quaternion->time_boot_ms, attitude_quaternion->q1, attitude_quaternion->q2, attitude_quaternion->q3, attitude_quaternion->q4, attitude_quaternion->rollspeed, attitude_quaternion->pitchspeed, attitude_quaternion->yawspeed);
+}
+
+/**
  * @brief Send a attitude_quaternion message
  * @param chan MAVLink channel to send the message
  *
- * @param time_boot_ms Timestamp (milliseconds since system boot)
- * @param q1 Quaternion component 1, w (1 in null-rotation)
- * @param q2 Quaternion component 2, x (0 in null-rotation)
- * @param q3 Quaternion component 3, y (0 in null-rotation)
- * @param q4 Quaternion component 4, z (0 in null-rotation)
- * @param rollspeed Roll angular speed (rad/s)
- * @param pitchspeed Pitch angular speed (rad/s)
- * @param yawspeed Yaw angular speed (rad/s)
+ * @param time_boot_ms [ms] Timestamp (time since system boot).
+ * @param q1  Quaternion component 1, w (1 in null-rotation)
+ * @param q2  Quaternion component 2, x (0 in null-rotation)
+ * @param q3  Quaternion component 3, y (0 in null-rotation)
+ * @param q4  Quaternion component 4, z (0 in null-rotation)
+ * @param rollspeed [rad/s] Roll angular speed
+ * @param pitchspeed [rad/s] Pitch angular speed
+ * @param yawspeed [rad/s] Yaw angular speed
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
@@ -242,7 +312,7 @@ static inline void mavlink_msg_attitude_quaternion_send_struct(mavlink_channel_t
 
 #if MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN <= MAVLINK_MAX_PAYLOAD_LEN
 /*
-  This varient of _send() can be used to save stack space by re-using
+  This variant of _send() can be used to save stack space by reusing
   memory from the receive buffer.  The caller provides a
   mavlink_message_t which is the size of a full mavlink message. This
   is usually the receive buffer for the channel, and allows a reply to an
@@ -286,7 +356,7 @@ static inline void mavlink_msg_attitude_quaternion_send_buf(mavlink_message_t *m
 /**
  * @brief Get field time_boot_ms from attitude_quaternion message
  *
- * @return Timestamp (milliseconds since system boot)
+ * @return [ms] Timestamp (time since system boot).
  */
 static inline uint32_t mavlink_msg_attitude_quaternion_get_time_boot_ms(const mavlink_message_t* msg)
 {
@@ -296,7 +366,7 @@ static inline uint32_t mavlink_msg_attitude_quaternion_get_time_boot_ms(const ma
 /**
  * @brief Get field q1 from attitude_quaternion message
  *
- * @return Quaternion component 1, w (1 in null-rotation)
+ * @return  Quaternion component 1, w (1 in null-rotation)
  */
 static inline float mavlink_msg_attitude_quaternion_get_q1(const mavlink_message_t* msg)
 {
@@ -306,7 +376,7 @@ static inline float mavlink_msg_attitude_quaternion_get_q1(const mavlink_message
 /**
  * @brief Get field q2 from attitude_quaternion message
  *
- * @return Quaternion component 2, x (0 in null-rotation)
+ * @return  Quaternion component 2, x (0 in null-rotation)
  */
 static inline float mavlink_msg_attitude_quaternion_get_q2(const mavlink_message_t* msg)
 {
@@ -316,7 +386,7 @@ static inline float mavlink_msg_attitude_quaternion_get_q2(const mavlink_message
 /**
  * @brief Get field q3 from attitude_quaternion message
  *
- * @return Quaternion component 3, y (0 in null-rotation)
+ * @return  Quaternion component 3, y (0 in null-rotation)
  */
 static inline float mavlink_msg_attitude_quaternion_get_q3(const mavlink_message_t* msg)
 {
@@ -326,7 +396,7 @@ static inline float mavlink_msg_attitude_quaternion_get_q3(const mavlink_message
 /**
  * @brief Get field q4 from attitude_quaternion message
  *
- * @return Quaternion component 4, z (0 in null-rotation)
+ * @return  Quaternion component 4, z (0 in null-rotation)
  */
 static inline float mavlink_msg_attitude_quaternion_get_q4(const mavlink_message_t* msg)
 {
@@ -336,7 +406,7 @@ static inline float mavlink_msg_attitude_quaternion_get_q4(const mavlink_message
 /**
  * @brief Get field rollspeed from attitude_quaternion message
  *
- * @return Roll angular speed (rad/s)
+ * @return [rad/s] Roll angular speed
  */
 static inline float mavlink_msg_attitude_quaternion_get_rollspeed(const mavlink_message_t* msg)
 {
@@ -346,7 +416,7 @@ static inline float mavlink_msg_attitude_quaternion_get_rollspeed(const mavlink_
 /**
  * @brief Get field pitchspeed from attitude_quaternion message
  *
- * @return Pitch angular speed (rad/s)
+ * @return [rad/s] Pitch angular speed
  */
 static inline float mavlink_msg_attitude_quaternion_get_pitchspeed(const mavlink_message_t* msg)
 {
@@ -356,7 +426,7 @@ static inline float mavlink_msg_attitude_quaternion_get_pitchspeed(const mavlink
 /**
  * @brief Get field yawspeed from attitude_quaternion message
  *
- * @return Yaw angular speed (rad/s)
+ * @return [rad/s] Yaw angular speed
  */
 static inline float mavlink_msg_attitude_quaternion_get_yawspeed(const mavlink_message_t* msg)
 {
@@ -380,9 +450,10 @@ static inline void mavlink_msg_attitude_quaternion_decode(const mavlink_message_
     attitude_quaternion->rollspeed = mavlink_msg_attitude_quaternion_get_rollspeed(msg);
     attitude_quaternion->pitchspeed = mavlink_msg_attitude_quaternion_get_pitchspeed(msg);
     attitude_quaternion->yawspeed = mavlink_msg_attitude_quaternion_get_yawspeed(msg);
+
 #else
-        uint8_t len = msg->len < MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN? msg->len : MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN;
-        memset(attitude_quaternion, 0, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN);
+    uint8_t len = msg->len < MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN ? msg->len : MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN;
+    memset(attitude_quaternion, 0, MAVLINK_MSG_ID_ATTITUDE_QUATERNION_LEN);
     memcpy(attitude_quaternion, _MAV_PAYLOAD(msg), len);
 #endif
 }
